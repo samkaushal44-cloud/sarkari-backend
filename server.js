@@ -1,67 +1,35 @@
 import express from "express";
-import axios from "axios";
-import cheerio from "cheerio";
 import cors from "cors";
 
 const app = express();
 app.use(cors());
 
-const PORT = process.env.PORT || 3000;
-
-// Job data uthana (FreeJobAlert se)
-async function fetchJobs() {
-  try {
-    const url = "https://www.freejobalert.com/latest-notifications/";
-    const { data } = await axios.get(url);
-    const $ = cheerio.load(data);
-
-    let jobs = [];
-
-    $("table tr").each((i, el) => {
-      const title = $(el).find("td:nth-child(2) a").text().trim();
-      const link = $(el).find("td:nth-child(2) a").attr("href");
-      const date = $(el).find("td:nth-child(4)").text().trim();
-
-      if (title && link) {
-        jobs.push({
-          title,
-          link,
-          date,
-          type: title.toLowerCase().includes("state") ? "state" : "central"
-        });
-      }
-    });
-
-    return jobs;
-  } catch (err) {
-    console.error("Error:", err.message);
-    return [];
+const jobs = [
+  {
+    title: "SSC CHSL Recruitment 2026",
+    link: "https://ssc.nic.in",
+    category: "Central Govt",
+    date: "2026-01-07"
+  },
+  {
+    title: "Railway Group D Vacancy",
+    link: "https://rrbcdg.gov.in",
+    category: "Railway",
+    date: "2026-01-07"
   }
-}
+];
 
-// Test page
+// Home route
 app.get("/", (req, res) => {
-  res.send("🚀 Sarkari Jobs Backend is Running");
+  res.send("Sarkari Jobs API is running");
 });
 
-// API: All jobs
-app.get("/api/jobs", async (req, res) => {
-  const jobs = await fetchJobs();
+// ✅ JOBS API ROUTE
+app.get("/jobs", (req, res) => {
   res.json(jobs);
 });
 
-// API: Central jobs
-app.get("/api/jobs/central", async (req, res) => {
-  const jobs = await fetchJobs();
-  res.json(jobs.filter(j => j.type === "central"));
-});
-
-// API: State jobs
-app.get("/api/jobs/state", async (req, res) => {
-  const jobs = await fetchJobs();
-  res.json(jobs.filter(j => j.type === "state"));
-});
-
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log("Server started on port " + PORT);
+  console.log("Server running on port " + PORT);
 });
